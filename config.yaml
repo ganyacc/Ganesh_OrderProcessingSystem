@@ -1,0 +1,15 @@
+server:
+  port: 8080
+
+db:
+  #for local
+  host: localhost
+
+  #for docker
+  #host: host.docker.internal
+  port: 5432
+  user: postgres
+  password: Ganyayadav@123
+  dbname: orderProcessingSystem
+  sslmode: disable
+  timezone: Asia/Kolkata
