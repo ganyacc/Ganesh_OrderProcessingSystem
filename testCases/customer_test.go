@@ -105,3 +105,35 @@ func TestCreateOrder(t *testing.T) {
 	// Example assertion: Check if the order total price exists in the response
 	assert.Equal(t, 77.35, order.TotalPrice)
 }
+
+// Test case for GetOrderById endpoint
+func TestGetOrderByID(t *testing.T) {
+	orderId := "10ac6f2c-18ae-46da-9cca-4f36c84ce343" // Replace with an actual order ID in your database
+
+	// Send GET request to the local server
+	resp, err := http.Get("http://localhost:8080/api/orders/" + orderId)
+	if err != nil {
+		t.Fatalf("Failed to send request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("Failed to read response body: %v", err)
+	}
+
+	// Assert the response status code
+	if resp.StatusCode == http.StatusOK {
+		// Parse and check the order data if status is OK
+		var order *entities.Order
+		if err := json.Unmarshal(responseBody, &order); err != nil {
+			t.Fatalf("Failed to parse response: %v", err)
+		}
+
+		// Example assertion: Check if the order Id exists in the response
+		assert.Contains(t, order.ID, orderId)
+	} else {
+		// Assert not found if status is 404
+		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+	}
+}
