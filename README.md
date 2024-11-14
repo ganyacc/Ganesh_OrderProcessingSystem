@@ -17,20 +17,22 @@ This is a Golang-based Order Processing System that allows users to manage custo
 
 ## Project Structure
 
+```
 .
-├── config # Database Configuration
-├── database # Connection to database and schema migration
-├── entities # Entity definitions (Customer, Order, Product)
-├── handler # HTTP handlers for Customer, Order and Product
-├── logger # log initializer
-├── pkg # public package (contains only error pkg now)
-├── repository # Repository layer for DB interactions
-├── server # echo server to run applicatiom
-├── testCases # Unit tests for endpoints
+├── config      # Database Configuration
+├── database    # Connection to database and schema migration
+├── entities    # Entity definitions (Customer, Order, Product)
+├── handler     # HTTP handlers for Customer, Order and Product
+├── logger      # log initializer
+├── pkg         # public package (contains only error pkg now)
+├── repository  # Repository layer for DB interactions
+├── server      # echo server to run applicatiom
+├── testCases   # Unit tests for endpoints
 ├── config.yaml # configuration file for database connection
-├── Dockerfile # Multistage dockerfile
-├── main.go # Main application file
-└── README.md # Project documentation
+├── Dockerfile  # Multistage dockerfile
+├── main.go     # Main application file
+└── README.md   # Project documentation
+```
 
 Getting Started
 
@@ -47,18 +49,29 @@ Getting Started
    go run main.go
 
 Endpoints
+
+```
 Customers
 GET /customers - Retrieve all customers
 GET /customers/:id - Retrieve a specific customer by ID
+```
 
-POST /orders - Create a new order
-Request Body  
- {
+POST /api/orders -
+Create a new order
+
+```
+Request Body
+{
 "customer_id": "your-customer-id",
 "product_ids": ["product-id-1", "product-id-2"]
 }
+```
 
+Get Order By Id
+
+```
 GET /orders/:id - Retrieve a specific order by ID
+```
 
 Testing
 Run Unit Tests
