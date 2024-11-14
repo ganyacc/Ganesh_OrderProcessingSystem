@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/ganyacc/Ganesh_OrderProcessingSystem/entities"
 	"github.com/ganyacc/Ganesh_OrderProcessingSystem/logger"
@@ -10,19 +11,19 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type customersHandler struct {
+type CustomersHandler struct {
 	CustomerRepo repository.CustomerHandler
 }
 
 // NewCustomerHandler returns the new instace of type customersHandler
 func NewCustomerHandler(customerRepository repository.CustomerHandler) CustomerHandler {
-	return &customersHandler{
+	return &CustomersHandler{
 		CustomerRepo: customerRepository,
 	}
 }
 
 // GetAllCustomers returns the all available customers
-func (cm customersHandler) GetAllCustomers(c echo.Context) error {
+func (cm CustomersHandler) GetAllCustomers(c echo.Context) error {
 
 	logger.Log.Info("GET /api/customers - Retrieving all customers")
 
@@ -32,22 +33,23 @@ func (cm customersHandler) GetAllCustomers(c echo.Context) error {
 		return c.JSON(err.HttpStatusCode(), err.Error())
 	}
 
-	logger.Log.Infof("Successfully retrieved %d customers", len(customers))
 	return c.JSON(http.StatusOK, customers)
 
 }
 
 // GetCustomerByID returns the all details of customer by customerId
-func (cm customersHandler) GetCustomerByID(c echo.Context) error {
+func (cm CustomersHandler) GetCustomerByID(c echo.Context) error {
 	id := c.Param("id")
 
 	_, err := uuid.Parse(id)
 	if err != nil {
+		logger.Log.Warn("Invalid request parameter for fetching customer.")
 		return c.JSON(http.StatusBadRequest, "invalid id.")
 	}
 
 	customer, errs := cm.CustomerRepo.GetCustomerByID(id)
 	if errs != nil {
+		logger.Log.Warn("Error fetching customer with id: ", id)
 		return c.JSON(errs.HttpStatusCode(), errs.Error())
 	}
 
@@ -56,7 +58,7 @@ func (cm customersHandler) GetCustomerByID(c echo.Context) error {
 }
 
 // CreateOrder handler
-func (cm customersHandler) CreateOrder(c echo.Context) error {
+func (cm CustomersHandler) CreateOrder(c echo.Context) error {
 
 	logger.Log.Info("POST /api/orders - Creating a new order")
 
@@ -95,25 +97,39 @@ func (cm customersHandler) CreateOrder(c echo.Context) error {
 		return c.JSON(errs.HttpStatusCode(), errs.Error())
 	}
 
-	logger.Log.Infof("Order created successfully with ID: %d", order.ID)
 	return c.JSON(http.StatusCreated, order)
 }
 
 // GetOrderByID handler retrieves order by id
-func (cm customersHandler) GetOrderByID(c echo.Context) error {
+func (cm CustomersHandler) GetOrderByID(c echo.Context) error {
 
 	id := c.Param("id")
 
 	_, err := uuid.Parse(id)
 	if err != nil {
+		logger.Log.Warn("Invalid request parameter to fetch order by id: ", err)
 		return c.JSON(http.StatusBadRequest, "invalid id.")
 	}
 
 	order, errs := cm.CustomerRepo.GetOrderByID(id)
-	if err != nil {
+	if errs != nil {
+		logger.Log.Warn("Error fetching order by id: ", errs.Error())
 		return c.JSON(errs.HttpStatusCode(), errs.Error())
 	}
 
 	return c.JSON(http.StatusOK, order)
 
+}
+
+// Middleware to log API latency
+func LatencyLogger(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		start := time.Now()
+		err := next(c)
+		stop := time.Now()
+
+		latency := stop.Sub(start)
+		c.Logger().Infof("Request to %s %s took %v", c.Request().Method, c.Request().URL.Path, latency)
+		return err
+	}
 }

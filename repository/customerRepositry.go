@@ -24,11 +24,16 @@ func NewCustomerRepository(db database.Database) CustomerHandler {
 
 // GetAllCustomers returns the list of all customers
 func (c customerRepository) GetAllCustomers() ([]entities.Customer, errorPkg.CustomErrors) {
+	if c.db == nil {
+		logger.Log.Warnf("Database connection not available.")
+		return nil, errorPkg.CustomErrorHandle(http.StatusInternalServerError, "Database connection not available")
+	}
 
 	db := c.db.GetDb().Begin()
 
 	var customers []entities.Customer
 	if err := db.Debug().Model(&entities.Customer{}).Find(&customers).Error; err != nil {
+		logger.Log.Error("Error fetching customers: ", err)
 		return nil, errorPkg.HandleError(db, err)
 	}
 
@@ -36,30 +41,44 @@ func (c customerRepository) GetAllCustomers() ([]entities.Customer, errorPkg.Cus
 		return nil, errorPkg.CustomErrorHandle(http.StatusNotFound, "no customer available")
 	}
 
+	logger.Log.Infof("Customers fetched successfully!. Total number of customers are: %d", len(customers))
 	return customers, nil
 }
 
 // GetCustomerByID retrives the customer from database by provided Id
 func (c customerRepository) GetCustomerByID(id string) (*entities.Customer, errorPkg.CustomErrors) {
+	if c.db == nil {
+		logger.Log.Warnf("Database connection not available.")
+		return nil, errorPkg.CustomErrorHandle(http.StatusInternalServerError, "Database connection not available")
+	}
+
 	db := c.db.GetDb().Begin()
 
 	var customer *entities.Customer
 	tx := db.Debug().Model(&entities.Customer{}).Find(&customer).Where("id=?", id)
 	if tx.Error != nil {
+		logger.Log.Error("Error fetching customer: ", tx.Error)
 		return nil, errorPkg.HandleError(tx, tx.Error)
 	}
 
+	logger.Log.Infof("Customer fetched successfully with ID: %v", id)
 	return customer, nil
 
 }
 
 // CreateOrder
 func (c customerRepository) CreateOrder(customerID string, productIds []string) (*entities.Order, errorPkg.CustomErrors) {
+
+	if c.db == nil {
+		logger.Log.Warnf("Database connection not available.")
+		return nil, errorPkg.CustomErrorHandle(http.StatusInternalServerError, "Database connection not available")
+	}
+
 	db := c.db.GetDb().Begin()
 
 	var customer entities.Customer
 	if err := db.Debug().Where("id = ?", customerID).Find(&customer).Error; err != nil {
-		logger.Log.Warnf("Customer with id %v not found", customerID)
+		logger.Log.Warnf("Customer with id %v not found.", customerID)
 		return nil, errorPkg.HandleError(db, err)
 	}
 
@@ -116,21 +135,30 @@ func (c customerRepository) CreateOrder(customerID string, productIds []string) 
 		return nil, errorPkg.HandleError(db, err)
 	}
 
-	logger.Log.Infof("Order created successfully with ID: %d", order.ID)
+	logger.Log.Infof("Order created successfully with ID: %v", order.ID)
 	return order, nil
 }
 
 // GetOrderByID
 func (c customerRepository) GetOrderByID(orderId string) (*entities.Order, errorPkg.CustomErrors) {
+	if c.db == nil {
+		logger.Log.Warnf("Database connection not available.")
+		return nil, errorPkg.CustomErrorHandle(http.StatusInternalServerError, "Database connection not available")
+	}
+
 	db := c.db.GetDb().Begin()
 
 	var order *entities.Order
 	if err := db.Debug().Preload("Products").Where("id=?", orderId).First(&order).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
+			logger.Log.Error("Order not found: ", err)
 			return nil, errorPkg.CustomErrorHandle(http.StatusNotFound, "Order not found.")
 		}
+
+		logger.Log.Error("Error fetching order: ", err)
 		return nil, errorPkg.CustomErrorHandle(http.StatusNotFound, err.Error())
 	}
 
+	logger.Log.Infof("Order fetched successfully with ID: %v", order.ID)
 	return order, nil
 }

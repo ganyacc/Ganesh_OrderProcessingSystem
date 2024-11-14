@@ -33,11 +33,35 @@ var (
 	configInstance *Config
 )
 
-func GetConfig() *Config {
+// func GetConfig() *Config {
+// 	once.Do(func() {
+// 		viper.SetConfigName("config")
+// 		viper.SetConfigType("yaml")
+// 		viper.AddConfigPath("./")
+// 		viper.AutomaticEnv()
+// 		viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+
+// 		if err := viper.ReadInConfig(); err != nil {
+// 			panic(err)
+// 		}
+
+// 		if err := viper.Unmarshal(&configInstance); err != nil {
+// 			panic(err)
+// 		}
+// 	})
+
+// 	return configInstance
+// }
+
+func GetConfig(configPath ...string) *Config {
 	once.Do(func() {
 		viper.SetConfigName("config")
 		viper.SetConfigType("yaml")
-		viper.AddConfigPath("./")
+		if len(configPath) > 0 {
+			viper.AddConfigPath(configPath[0]) // Use custom path if provided
+		} else {
+			viper.AddConfigPath(".") // Default path
+		}
 		viper.AutomaticEnv()
 		viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
