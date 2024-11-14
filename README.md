@@ -1,4 +1,3 @@
-
 # Order Processing System
 
 This is a Golang-based Order Processing System that allows users to manage customers and orders through RESTful API endpoints. This project uses the Echo web framework, Gorm ORM for database operations, and includes unit tests for endpoint testing.
@@ -38,8 +37,11 @@ This is a Golang-based Order Processing System that allows users to manage custo
 Getting Started
 
 1. Clone the Repository
+
+```
    git clone https://github.com/yourusername/Ganesh_OrderProcessingSystem.git
    cd Ganesh_OrderProcessingSystem
+```
 
 2. Run with Docker
    docker build -t your-img-name .
@@ -86,4 +88,3 @@ This README provides instructions on:
 2. Running the app locally or in Docker.
 3. Using endpoints.
 4. Running tests with Go and Docker Compose.
-
