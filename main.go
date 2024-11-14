@@ -20,6 +20,7 @@ func main() {
 
 	// Defer database close to ensure it shuts down at the end
 	defer func() {
+		logrus.Println("Defer: Closing database...")
 		if err := db.CloseDb(database.DbInstance.Db); err != nil {
 			logrus.Error("Error closing SQL DB: ", err)
 		}

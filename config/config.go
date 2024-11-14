@@ -33,11 +33,15 @@ var (
 	configInstance *Config
 )
 
-func GetConfig() *Config {
+func GetConfig(configPath ...string) *Config {
 	once.Do(func() {
 		viper.SetConfigName("config")
 		viper.SetConfigType("yaml")
-		viper.AddConfigPath("./")
+		if len(configPath) > 0 {
+			viper.AddConfigPath(configPath[0]) // Use custom path if provided
+		} else {
+			viper.AddConfigPath(".") // Default path
+		}
 		viper.AutomaticEnv()
 		viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 

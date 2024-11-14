@@ -16,7 +16,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type echoServer struct {
+type EchoServer struct {
 	app  *echo.Echo
 	db   database.Database
 	conf *config.Config
@@ -26,16 +26,17 @@ func NewEchoServer(conf *config.Config, db database.Database) Server {
 	echoApp := echo.New()
 	echoApp.Logger.SetLevel(log.DEBUG)
 
-	return &echoServer{
+	return &EchoServer{
 		app:  echoApp,
 		db:   db,
 		conf: conf,
 	}
 }
 
-func (s *echoServer) Start() error {
+func (s *EchoServer) Start() error {
 	s.app.Use(middleware.Recover())
 	s.app.Use(middleware.Logger())
+	s.app.Use(handler.LatencyLogger)
 
 	//initialize logger
 	logger.Init()
@@ -53,13 +54,13 @@ func (s *echoServer) Start() error {
 }
 
 // Shutdown gracefully stops the server with a given context
-func (s *echoServer) Shutdown(ctx context.Context) error {
+func (s *EchoServer) Shutdown(ctx context.Context) error {
 	logrus.Println("Attempting to gracefully shutdown the server...")
 	return s.app.Shutdown(ctx)
 }
 
 // Routes define the new routes
-func (s *echoServer) Routes() {
+func (s *EchoServer) Routes() {
 	customerRepo := repository.NewCustomerRepository(s.db)
 	customerHandler := handler.NewCustomerHandler(customerRepo)
 

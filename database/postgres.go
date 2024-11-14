@@ -62,13 +62,26 @@ func (p *postgresDatabase) CloseDb(db *gorm.DB) error {
 
 func (p *postgresDatabase) AutoMigrateTables() error {
 
-	//--Create the recurring enum type if it does not exist
-	err := p.Db.Exec(`
-		CREATE TYPE IF NOT EXISTS order_status AS ENUM ('unfulfilled', 'fulfilled');
-	`).Error
+	var exists bool
+	err := p.Db.Raw(`
+				SELECT EXISTS (
+				SELECT 1
+				FROM pg_type
+				WHERE typname = 'order_status'
+			);`).Scan(&exists).Error
+
 	if err != nil {
-		log.Println("Error creating order_status enum:", err)
+		log.Println("Error checking if order_status enum exists:", err)
 		return err
+	}
+
+	// Create the enum type if it doesn't exist
+	if !exists {
+		err = p.Db.Exec(`CREATE TYPE order_status AS ENUM ('unfulfilled', 'fulfilled');`).Error
+		if err != nil {
+			log.Println("Error creating order_status enum:", err)
+			return err
+		}
 	}
 
 	return p.Db.AutoMigrate(&entities.Customer{}, &entities.Product{}, &entities.Order{})
