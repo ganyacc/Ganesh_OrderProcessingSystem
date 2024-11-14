@@ -1,0 +1,17 @@
+server:
+  port: #add port
+
+db:
+  #for localhost
+  host: localhost
+
+  #for docker
+  host: host.docker.internal
+  
+  port: 5432 #default port for PostgreSQL
+  
+  user: postgres
+  password: #db password
+  dbname: orderProcessingSystem
+  sslmode: disable
+  timezone: Asia/Kolkata
